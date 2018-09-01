@@ -35,7 +35,7 @@ class RecordsController @Inject()(recordsDAO: RecordRepository, dbExecuter: DBIm
         score <- (request.body \ "score").asOpt[String]
       } yield {
         recordsDAO.save(Record(pk, score)).mapTo[Record] map {
-          sup => Created("Id of Supplier Added : " + sup.pk)
+          sup => Created(request.body)
         } recoverWith {
           case e => Future {
             println(e)

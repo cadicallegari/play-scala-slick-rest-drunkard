@@ -72,7 +72,7 @@ class ApplicationSpec extends PlaySpecification with Results with Matchers with 
       val (pk, score) = ("216654", "10")
       val record = Record(pk, score)
       daoMock.save(record).returns(DBIOAction.from(Future {
-        record.copy(pk = "1")
+        record.copy(pk = pk)
       }))
 
       val body = Json.parse(s"""{"pk": "${pk}", "score": "${score}"}""")
