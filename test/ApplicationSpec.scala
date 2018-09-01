@@ -1,14 +1,14 @@
 import java.time.Clock
 
 import com.google.inject.{AbstractModule, Provides}
-import models.entities.Supplier
-import models.repos.SupplierRepository
+import models.entities.Record
+import models.repos.RecordRepository
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test._
 import org.specs2.execute.Results
 import org.specs2.matcher.Matchers
 import org.specs2.mock.Mockito
-import play.api.libs.json.{JsObject, JsString}
+import play.api.libs.json.{JsObject, JsString, Json}
 import slick.dbio.DBIOAction
 import play.api.libs.concurrent.Execution.Implicits._
 import slick.SlickException
@@ -18,77 +18,73 @@ import scala.concurrent.{ExecutionContext, Future}
 class ApplicationSpec extends PlaySpecification with Results with Matchers with Mockito {
   sequential
 
-  val daoMock = mock[SupplierRepository]
+  val daoMock = mock[RecordRepository]
 
-  val application = new GuiceApplicationBuilder().overrides(new AbstractModule {
+  val app = new GuiceApplicationBuilder().overrides(new AbstractModule {
     override def configure() = {
       bind(classOf[Clock]).toInstance(Clock.systemDefaultZone)
     }
 
     @Provides
-    def suppliersDAO: SupplierRepository = daoMock
+    def recordsDAO: RecordRepository = daoMock
   }).build
 
   "Routes" should {
 
     "send 404 on a bad request" in {
-      route(application, FakeRequest(GET, "/boum")).map(status(_)) shouldEqual Some(NOT_FOUND)
+      route(app, FakeRequest(GET, "/boum")).map(status(_)) shouldEqual Some(NOT_FOUND)
     }
 
-//    "send 204 when there isn't a /supplier/1" in {
-//      daoMock.findOne(0).returns(DBIOAction.from(Future {
-//        None
-//      }))
-//      route(application, FakeRequest(GET, "/supplier/0")).map(
-//        status(_)) shouldEqual Some(NO_CONTENT)
-//    }
+    "send 204 when there isn't a /records/1" in {
+      daoMock.findOne("0").returns(DBIOAction.from(Future {
+        None
+      }))
+      route(app, FakeRequest(GET, "/records/0")).map(
+        status(_)) shouldEqual Some(NO_CONTENT)
+    }
 
-//    "send 200 when there is a /supplier/1" in {
-//      daoMock.findOne(1).returns(DBIOAction.from(Future {
-//        Some(Supplier(Some(1), "name", "desc"))
-//      }))
-//      route(application, FakeRequest(GET, "/supplier/1")).map(
-//        status(_)) shouldEqual Some(OK)
-//    }
+    "send 200 when there is a /records/1" in {
+      daoMock.findOne("123").returns(DBIOAction.from(Future {
+        Some(Record("123", "50"))
+      }))
+      route(app, FakeRequest(GET, "/records/123")).map(
+        status(_)) shouldEqual Some(OK)
+    }
 
-    "send 415 when post to create a supplier without json type" in {
-      route(application, FakeRequest(POST, "/supplier")).map(
+    "send 415 when post to create a record without json type" in {
+      route(app, FakeRequest(POST, "/records")).map(
         status(_)) shouldEqual Some(UNSUPPORTED_MEDIA_TYPE)
     }
 
-    "send 400 when post to create a supplier with empty json" in {
-      route(application,
-        FakeRequest(POST, "/supplier", FakeHeaders(("Content-type", "application/json") :: Nil), JsObject(Seq()))).map(
+    "send 400 when post to create a record with empty json" in {
+      route(app,
+        FakeRequest(POST, "/records", FakeHeaders(("Content-type", "application/json") :: Nil), JsObject(Seq()))).map(
         status(_)) shouldEqual Some(BAD_REQUEST)
     }
 
-    "send 400 when post to create a supplier with wrong json" in {
-      route(application,
-        FakeRequest(POST, "/supplier", FakeHeaders(("Content-type", "application/json") :: Nil), JsObject(Seq("wrong" -> JsString("wrong"))))).map(
+    "send 400 when post to create a record with wrong json" in {
+      route(app,
+        FakeRequest(POST, "/records", FakeHeaders(("Content-type", "application/json") :: Nil), JsObject(Seq("wrong" -> JsString("wrong"))))).map(
         status(_)) shouldEqual Some(BAD_REQUEST)
     }
 
-//    "send 201 when post to create a supplier with valid json" in {
-//      val (name, desc) = ("Apple", "Shut up and take my money")
-//      val supplier = Supplier(None, name, desc)
-//      daoMock.save(supplier).returns(DBIOAction.from(Future {
-//        supplier.copy(id = Some(1))
-//      }))
-//      route(application,
-//        FakeRequest(POST, "/supplier", FakeHeaders(("Content-type", "application/json") :: Nil),
-//          JsObject(Seq("name" -> JsString(name), "desc" -> JsString(desc))))).map(
-//        status(_)) shouldEqual Some(CREATED)
-//    }
+    "send 201 when post to create a record with valid json" in {
+      val (pk, score) = ("216654", "10")
+      val record = Record(pk, score)
+      daoMock.save(record).returns(DBIOAction.from(Future {
+        record.copy(pk = "1")
+      }))
 
-//    "send 500 when post to create a supplier with valid json" in {
-    //      val (name, desc) = ("Apple", "Shut up and take my money")
-    //      val supplier = Supplier(None, name, desc)
-    //      daoMock.save(supplier).returns(DBIOAction.failed(new SlickException("test")))
-    //      route(application,
-    //        FakeRequest(POST, "/supplier", FakeHeaders(("Content-type", "application/json") :: Nil),
-    //          JsObject(Seq("name" -> JsString(name), "desc" -> JsString(desc))))).map(
-    //        status(_)) shouldEqual Some(INTERNAL_SERVER_ERROR)
-    //    }
+      val body = Json.parse(s"""{"pk": "${pk}", "score": "${score}"}""")
+      val request = FakeRequest(POST, "/records")
+        .withJsonBody(body)
+
+      val Some(response) = route(app, request)
+
+      status(response) shouldEqual (CREATED)
+
+    }
+
 
   }
 
