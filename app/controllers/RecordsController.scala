@@ -7,6 +7,8 @@ import models.repos.RecordRepository
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc._
 import util.DBImplicits
+import org.postgresql.util.PSQLException
+
 
 import scala.concurrent.Future
 import play.api.libs.concurrent.Execution.Implicits._
@@ -37,6 +39,10 @@ class RecordsController @Inject()(recordsDAO: RecordRepository, dbExecuter: DBIm
         recordsDAO.save(Record(pk, score)).mapTo[Record] map {
           sup => Created(request.body)
         } recoverWith {
+          case e: PSQLException => Future {
+            println(e)
+            UnprocessableEntity("already exists")
+          }
           case e => Future {
             println(e)
             InternalServerError("Something wrong on server")

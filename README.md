@@ -6,27 +6,36 @@ It supports the following features:
 
 The project was thought to be used as an activator template.
 
-#Running
+## Running
 
-The database pre-configured is an h2, so you just have to:
+First you need to run the postgres database
 
+```
+docker-compose up -d
+```
 
-        $ sbt run
+```
+sbt run
+```
 
-#Testing
+## Testing
 
 To run all tests (routes and persistence tests):
 
+```
+sbt test
+```
 
-        $ sbt test
+## Using
 
-#Using
+```
+curl --request POST localhost:9000/records -H "Content-type: application/json" --data "{\"pk\" : \"some-pk\",\"score\" : \"54645\"}"
+```
 
-	curl --request POST localhost:9000/records -H "Content-type: application/json" --data "{\"pk\" : \"some-pk\",\"score\" : \"54645\"}"
+```
+curl localhost:9000/records/1
+```
 
-	curl localhost:9000/records/1
+## Credits
 
-
-#Credits
-
-To make this template, is based on https://github.com/cdiniz/play-slick-rest
+It is based on https://github.com/cdiniz/play-slick-rest
