@@ -1,7 +1,7 @@
 import com.google.inject.{AbstractModule, Inject, Provides}
 import java.time.Clock
 
-import models.repos.SupplierRepository
+import models.repos.RecordRepository
 import play.api.{Configuration, Environment}
 import util.DBImplicits
 
@@ -24,7 +24,7 @@ class Module (environment: Environment,
   override def configure() = {
     // Use the system clock as the default implementation of Clock
     bind(classOf[Clock]).toInstance(Clock.systemDefaultZone)
-    bind(classOf[SupplierRepository]).asEagerSingleton()
+    bind(classOf[RecordRepository]).asEagerSingleton()
     bind(classOf[DBImplicits]).asEagerSingleton()
   }
 

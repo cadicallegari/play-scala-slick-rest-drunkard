@@ -22,9 +22,9 @@ To run all tests (routes and persistence tests):
 
 #Using
 
-	curl --request POST localhost:9000/supplier -H "Content-type: application/json" --data "{\"name\" : \"sup1\",\"desc\" : \"low prices\"}"
+	curl --request POST localhost:9000/records -H "Content-type: application/json" --data "{\"pk\" : \"some-pk\",\"score\" : \"54645\"}"
 
-	curl localhost:9000/supplier/1
+	curl localhost:9000/records/1
 
 
 #Credits

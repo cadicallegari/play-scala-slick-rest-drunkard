@@ -1,7 +1,10 @@
 # --- !Ups
 
-create table "SUPPLIERS" ("ID" BIGSERIAL NOT NULL PRIMARY KEY,"name" VARCHAR(254) NOT NULL,"desc" VARCHAR(254) NOT NULL);
+CREATE TABLE records (
+  pk VARCHAR (50) PRIMARY KEY,
+  score VARCHAR (50) NOT NULL
+);
 
 # --- !Downs
 ;
-drop table "SUPPLIERS";
+drop table records;
